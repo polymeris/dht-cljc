@@ -1,17 +1,22 @@
 (ns dht-clj.utils
-  (:require [clojure.string :as s]
-            [clojure.zip :as zip]
-            )
+  (:require [clojure.string :as s])
   (:import java.security.MessageDigest
            java.math.BigInteger))
+
+(def
+  ^{:doc "A list of BitTorrent DHT bootstrap nodes."}
+  bootstrap-nodes
+  [["router.utorrent.com" 6881]
+   ["dht.transmissionbt.com" 6881]
+   ["dht.aelitis.com" 6881]])
 
 (defn bytes->hex
   "Converts bytes into a hex string"
   [^bytes bytes]
   (->> bytes
-      (mapcat #(vector (bit-shift-right (bit-and % 0xF0) 4) (bit-and % 0x0F)))
-      (map {0 \0 7 \7 1 \1 4 \4 15 \f 13 \d 6 \6 3 \3 12 \c 2 \2 11 \b 9 \9 5 \5 14 \e 10 \a 8 \8})
-      (apply str "0x")))
+       (mapcat #(vector (bit-shift-right (bit-and % 0xF0) 4) (bit-and % 0x0F)))
+       (map {0 \0 7 \7 1 \1 4 \4 15 \f 13 \d 6 \6 3 \3 12 \c 2 \2 11 \b 9 \9 5 \5 14 \e 10 \a 8 \8})
+       (apply str "0x")))
 
 (defn hex->bytes
   "Converts hex string to byte-array"
