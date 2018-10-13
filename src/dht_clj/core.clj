@@ -34,6 +34,18 @@
   ([table]
    (get-by-depth table 160)))
 
+(defn get-by-overdue
+  "Find all nodes in a table that are past the given 'expired-before param,
+  in milliseconds"
+  [{:keys [router] :as table} expired-before]
+  (filter #(-> % :last-seen (< expired-before)) router))
+
+(defn fifteen-minutes-overdue!
+  "Gets the time, in milliseconds, 15 minutes ago. This is the default used
+  in the BEP_0005 spec for overdue nodes. Useful for 'get-by-overdue"
+  []
+  (- (System/currentTimeMillis) 900000))
+
 (defn insert
   "Inserts the given node into the router, respecting full and dividing buckets.
   Refer to BEP_0005 for more information.
