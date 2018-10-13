@@ -1,14 +1,7 @@
-(ns dht-clj.utils
+(ns dht-clj.infohash
   (:require [clojure.string :as s])
   (:import java.security.MessageDigest
            java.math.BigInteger))
-
-(def
-  ^{:doc "A list of BitTorrent DHT bootstrap nodes."}
-  bootstrap-nodes
-  [["router.utorrent.com" 6881]
-   ["dht.transmissionbt.com" 6881]
-   ["dht.aelitis.com" 6881]])
 
 (defn bytes->hex
   "Converts bytes into a hex string"
@@ -33,6 +26,26 @@
   (let [jsha (MessageDigest/getInstance "SHA-1")]
     (.update jsha data)
     (.digest jsha)))
+
+(defn generate!
+  "Generates a random SHA1 infohash useful for clients.
+  Returns a byte-stream"
+  []
+  (sha1 (.getBytes (str (rand (System/currentTimeMillis))))))
+
+(defn distance
+  "Get the XOR difference (abs (xor a b)) between two infohashes.
+  Returns a BigInteger of the distance."
+  [^bytes a ^bytes b]
+  (.xor (BigInteger. 1 a)
+        (BigInteger. 1 b)))
+
+(defn depth
+  "Given a BigInteger of the XOR distance, count the left-most zero bits. This
+  represents the point of divergence away from the measured infohash.
+  Returns an integer."
+  [^BigInteger dist]
+  (- 160 (.bitLength dist)))
 
 (comment
   (bytes->hex (hex->bytes (bytes->hex (sha1 (.getBytes "aaa")))))

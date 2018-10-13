@@ -1,26 +1,13 @@
 (ns dht-clj.core
-  (:require [dht-clj.utils :as utils])
+  (:require [dht-clj.infohash :as infohash])
   (:import java.math.BigInteger))
 
-(defn get-random-infohash!
-  "Generates a random SHA1 infohash useful for clients.
-  Returns a byte-stream"
-  []
-  (utils/sha1 (.getBytes (str (rand (System/currentTimeMillis))))))
-
-(defn distance
-  "Get the XOR difference (abs (xor a b)) between two infohashes.
-  Returns a BigInteger of the distance."
-  [^bytes a ^bytes b]
-  (.xor (BigInteger. 1 a)
-        (BigInteger. 1 b)))
-
-(defn depth
-  "Given a BigInteger of the XOR distance, count the left-most zero bits. This
-  represents the point of divergence away from the measured infohash.
-  Returns an integer."
-  [^BigInteger dist]
-  (- 160 (.bitLength dist)))
+(def
+  ^{:doc "A list of BitTorrent DHT bootstrap nodes."}
+  bootstrap-nodes
+  [["router.utorrent.com" 6881]
+   ["dht.transmissionbt.com" 6881]
+   ["dht.aelitis.com" 6881]])
 
 (defn generate-table
   "Generates a blank routing table ready to be filled with addresses
@@ -59,7 +46,7 @@
   Returns the updated table"
   ([{:keys [client-infohash max-bucket-count] :as table} last-seen ^bytes remote-infohash ip port]
    (loop [{:keys [splits] :as _table} table
-          node-depth (depth (distance remote-infohash client-infohash))
+          node-depth (infohash/depth (infohash/distance remote-infohash client-infohash))
           node {:infohash remote-infohash :depth node-depth :ip ip :port port :last-seen last-seen}]
      (let [num-nodes-in-bucket (count (get-by-depth _table node-depth))
            is-client-bucket? (>= node-depth splits)]
@@ -70,30 +57,3 @@
            (recur (update _table :splits inc) node-depth node))))))
   ([table ^bytes remote-infohash ip port]
    (insert table (System/currentTimeMillis) remote-infohash ip port)))
-
-(comment
-  (time
-    (-> (generate-table (utils/sha1 (.getBytes "abc")))
-;       (insert (utils/sha1 (.getBytes "abc")) "1.2.3.4" 6881)
-;       (insert (utils/sha1 (.getBytes "aaa")) "1.2.3.4" 6881)
-;       (insert (utils/sha1 (.getBytes "aaaa")) "1.2.3.4" 6881)
-;       (insert (utils/sha1 (.getBytes "aaaaa")) "1.2.3.4" 6881)
-;       (insert (utils/sha1 (.getBytes "aaaaaa")) "1.2.3.4" 6881)
-;       (insert (utils/sha1 (.getBytes "aaaaaaa")) "1.2.3.4" 6881)
-;       (insert (utils/sha1 (.getBytes "ab")) "5.6.7.8" 6881)
-;       (insert (utils/sha1 (.getBytes "ccc")) "127.0.0.1" 6881)
-;       (insert (get-random-infohash!) "127.0.0.1" 6881)
-;       (insert (get-random-infohash!) "127.0.0.1" 6881)
-
-;       :router
-;       (->> (reduce (fn [coll {:keys [depth]}] (update coll depth (fnil inc 0))) {}))
-;       (->> (map :depth))
-
-;       (get-by-depth)
-
-;       (get-client-bucket)
-
-;       clojure.pprint/pprint
-;       count
-        ))
-  )
