@@ -67,7 +67,11 @@ Coming Soon!
 
 #### Find nodes in that need to be refreshed/pinged
 
-Coming Soon!
+Several functions help with keeping the list of nodes fresh.
+
+`get-by-overdue` is a general query function that returns a list of nodes that are from before the provided timestamp. The [BEP][bep-5] describes a 15 minute window for refreshing clients, so the helper function `fifteen-minutes-overdue!` returns a timestamp representing 15 minutes from invocation in milliseconds.
+
+`refresh` takes a list of [infohash timestamp] tuples and applies them to their respective nodes. Unlike the [BEP][bep-5] we do not track questionable nodes explicitly, preferring to keep that in control of the consumer.
 
 ## Why?
 

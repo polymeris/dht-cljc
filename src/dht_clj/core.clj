@@ -46,6 +46,20 @@
   []
   (- (System/currentTimeMillis) 900000))
 
+(defn refresh
+  "Refreshes the table's nodes with new :last-seen timestamps.
+  Accepts a variadic number of responses. Each response is a tuple of the
+  infohash and the new timestamp, or [infohash timestamp]"
+  [{:keys [router] :as table} & responses]
+  (->> responses
+       (reduce
+         (fn [r [infohash timestamp]]
+           (update r (vec infohash) #(assoc % :last-seen timestamp)))
+         (zipmap (map (comp vec :infohash) router) router))
+       vals
+       vec
+       (assoc table :router)))
+
 (defn insert
   "Inserts the given node into the router, respecting full and dividing buckets.
   Refer to BEP_0005 for more information.
