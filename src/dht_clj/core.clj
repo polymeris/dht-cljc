@@ -14,3 +14,10 @@
   [^bytes a ^bytes b]
   (.xor (BigInteger. 1 a)
         (BigInteger. 1 b)))
+
+(defn depth
+  "Given a BigInteger of the XOR distance, count the left-most zero bits. This
+  represents the point of divergence away from the measured infohash.
+  Returns an integer."
+  [^BigInteger dist]
+  (- 160 (.bitLength dist)))
