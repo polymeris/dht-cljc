@@ -1,24 +1,26 @@
 (ns dht-clj.core-test
+  (:refer-clojure :exclude [hash])
   (:require
     [dht-clj.core :refer :all]
     [dht-clj.infohash :as infohash]
     [clojure.test :refer :all])
   (:import java.math.BigInteger))
 
-(deftest table-operations
-  (let [table (generate-table (infohash/sha1 (.getBytes "abc")))
-        h-fn #(infohash/sha1 (.getBytes %))]
+(def hash #(infohash/sha1 (.getBytes %)))
+
+(deftest insert-operations
+  (let [table (generate-table (hash "abc"))]
     (testing "Insert a few options into the table"
       (is (-> table
-              (insert! (h-fn "abc") "1.2.3.4" 6881)
+              (insert! (hash "abc") "1.2.3.4" 6881)
               (get-in [:router 0 :depth])
               (= 160)))
       (is (-> table
-              (insert! (h-fn "aaa") "1.2.3.4" 6881)
+              (insert! (hash "aaa") "1.2.3.4" 6881)
               (get-in [:router 0 :depth])
               (= 0)))
       (is (-> table
-              (insert! (h-fn "aaaaaaaa") "1.2.3.4" 6881)
+              (insert! (hash "aaaaaaaa") "1.2.3.4" 6881)
               (get-in [:router 0 :depth])
               (= 3))))
     (testing "Querying"
