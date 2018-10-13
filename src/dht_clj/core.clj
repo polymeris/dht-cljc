@@ -2,8 +2,8 @@
   (:require [dht-clj.utils :as utils])
   (:import java.math.BigInteger))
 
-(defn get-random-id!
-  "Generates a random SHA1 ID useful for clients.
+(defn get-random-infohash!
+  "Generates a random SHA1 infohash useful for clients.
   Returns a byte-stream"
   []
   (utils/sha1 (.getBytes (str (rand (System/currentTimeMillis))))))
@@ -26,13 +26,13 @@
   "Generates a blank routing table ready to be filled with addresses
 
     :router - The vector of clients. See 'insert for client format
-    :client-id - The ID for the currently running node
-    :splits - The depth of the client-id bucket
+    :client-infohash - The infohash for the currently running node
+    :splits - The depth of the client-infohash bucket
     :max-bucket-count - The maximum good nodes in a bucket before a split.
                         Default 8 per the spec"
-  [client-id & [max-bucket-count]]
+  [client-infohash & [max-bucket-count]]
   {:router []
-   :client-id client-id
+   :client-infohash client-infohash
    :splits 0
    :max-bucket-count (or max-bucket-count 8)})
 
@@ -53,14 +53,14 @@
 
     table - The table whose router we want to update
     last-seen - (optional) timestamp since this node was last seen
-    remote-id - The ID of the node we want to insert
+    remote-infohash - The infohash of the node we want to insert, in bytes
     ip, port - The IP and port of the node
 
   Returns the updated table"
-  ([{:keys [router client-id max-bucket-count] :as table} last-seen remote-id ip port]
+  ([{:keys [client-infohash max-bucket-count] :as table} last-seen ^bytes remote-infohash ip port]
    (loop [{:keys [splits] :as _table} table
-          node-depth (depth (distance remote-id client-id))
-          node {:id remote-id :depth node-depth :ip ip :port port :last-seen last-seen}]
+          node-depth (depth (distance remote-infohash client-infohash))
+          node {:infohash remote-infohash :depth node-depth :ip ip :port port :last-seen last-seen}]
      (let [num-nodes-in-bucket (count (get-by-depth _table node-depth))
            is-client-bucket? (>= node-depth splits)]
        (if (< num-nodes-in-bucket max-bucket-count)
@@ -68,8 +68,8 @@
          (if-not is-client-bucket?
            _table
            (recur (update _table :splits inc) node-depth node))))))
-  ([table remote-id ip port]
-   (insert table (System/currentTimeMillis) remote-id ip port)))
+  ([table ^bytes remote-infohash ip port]
+   (insert table (System/currentTimeMillis) remote-infohash ip port)))
 
 (comment
   (time
@@ -82,8 +82,8 @@
 ;       (insert (utils/sha1 (.getBytes "aaaaaaa")) "1.2.3.4" 6881)
 ;       (insert (utils/sha1 (.getBytes "ab")) "5.6.7.8" 6881)
 ;       (insert (utils/sha1 (.getBytes "ccc")) "127.0.0.1" 6881)
-;       (insert (get-random-id!) "127.0.0.1" 6881)
-;       (insert (get-random-id!) "127.0.0.1" 6881)
+;       (insert (get-random-infohash!) "127.0.0.1" 6881)
+;       (insert (get-random-infohash!) "127.0.0.1" 6881)
 
 ;       :router
 ;       (->> (reduce (fn [coll {:keys [depth]}] (update coll depth (fnil inc 0))) {}))
