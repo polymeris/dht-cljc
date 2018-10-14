@@ -133,3 +133,24 @@
                  (map (comp vec :infohash))
                  set
                  (= (set (map vec (drop amt-to-prune selected-hashes))))))))))
+
+(deftest generate-large-synthetic-test
+  (let [rctr (comp count :router)
+        mass-insert-fn
+        (fn [table number timestamp]
+          (reduce
+            #(insert %1 timestamp (infohash/generate!) "127.0.0.1" %2)
+            table
+            (range number)))
+        table (-> (generate-table (infohash/generate!))
+                  (mass-insert-fn 5 0)
+                  (mass-insert-fn 10 (fifteen-minutes-overdue!))
+                  (mass-insert-fn 20 (System/currentTimeMillis)))]
+    (testing "Do splits rise and fall correctly?"
+      (is (< 1 (:splits table)))
+      (is (zero? (:splits (apply prune table (drop 7 (map :infohash (:router table))))))))
+    (testing "Cull by timestamp"
+      (is (> (rctr table)
+             (rctr (apply prune table (map :infohash (get-by-overdue table 1))))))
+      (is (> (rctr table)
+             (rctr (apply prune table (map :infohash (get-by-overdue table (fifteen-minutes-overdue!))))))))))
