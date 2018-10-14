@@ -79,7 +79,7 @@
       (is (= 5 (count (get-by-overdue table 2400001))))
       (is (= 6 (count (get-by-overdue table (fifteen-minutes-overdue!))))))))
 
-(deftest refresh-and-purge-operations
+(deftest refresh-and-prune-operations
   (let [table
         (-> {:router [{:infohash "0x7e240de74fb1ed08fa08d38063f6a6a91462a815"
                        :depth 0
@@ -114,19 +114,22 @@
              :client-infohash "0xa9993e364706816aba3e25717850c26c9cd0d89d"
              :splits 0
              :max-bucket-count 8}
-            (update :router (partial mapv #(update % :infohash infohash/hex->bytes))))]
+            (update :router (partial mapv #(update % :infohash infohash/hex->bytes))))
+        selected-hashes (map :infohash (:router table))]
     (testing "refresh some timestamps"
-        (let [change-list
-              (map (partial vector)
-                   (map infohash/hex->bytes
-                        ["0x7e240de74fb1ed08fa08d38063f6a6a91462a815"
-                         "0x70c881d4a26984ddce795f6f71817c9cf4480e79"
-                         "0xdf51e37c269aa94d38f93e537bf6e2020b21406c"
-                         "0xf7a9e24777ec23212c54d7a350bc5bea5477fdbb"
-                         "0xe93b4e3c464ffd51732fbd6ded717e9efda28aad"])
-                   (repeat (System/currentTimeMillis)))]
-          (dotimes [amt-to-update 6]
-            (is (-> (apply refresh table (take amt-to-update change-list))
-                    (get-by-overdue (fifteen-minutes-overdue!))
-                    count
-                    (= (- 6 amt-to-update)))))))))
+      (let [change-list (map (partial vector)
+                             selected-hashes
+                             (repeat (System/currentTimeMillis)))]
+        (dotimes [amt-to-update 7]
+          (is (-> (apply refresh table (take amt-to-update change-list))
+                  (get-by-overdue (fifteen-minutes-overdue!))
+                  count
+                  (= (- 6 amt-to-update)))))))
+    (testing "prune specific hashes"
+      (dotimes [amt-to-prune 7]
+        (is (->> (take amt-to-prune selected-hashes)
+                 (apply prune table)
+                 :router
+                 (map (comp vec :infohash))
+                 set
+                 (= (set (map vec (drop amt-to-prune selected-hashes))))))))))

@@ -60,6 +60,20 @@
        vec
        (assoc table :router)))
 
+(defn prune
+  "Removes listed infohashes from the router, combining buckets as needed"
+  [{:keys [router max-bucket-count] :as table} & infohashes]
+  (loop [_table
+         (update table :router
+                 (partial remove #((set (map vec infohashes))
+                                   (vec (:infohash %)))))]
+    (if (zero? (:splits _table))
+      _table
+      (let [table-check (update _table :splits dec)]
+        (if-not (> max-bucket-count (count (get-by-depth table-check (:splits _table))))
+          _table
+          (recur table-check))))))
+
 (defn insert
   "Inserts the given node into the router, respecting full and dividing buckets.
   Refer to BEP_0005 for more information.
