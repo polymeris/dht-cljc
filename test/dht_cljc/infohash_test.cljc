@@ -1,6 +1,6 @@
-(ns dht-clj.infohash-test
+(ns dht-cljc.infohash-test
   (:require
-    [dht-clj.infohash :refer :all]
+    [dht-cljc.infohash :refer :all]
     [clojure.test :refer :all]))
 
 (deftest sha1-hash

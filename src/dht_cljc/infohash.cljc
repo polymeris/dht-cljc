@@ -1,4 +1,4 @@
-(ns dht-clj.infohash
+(ns dht-cljc.infohash
   (:require [clojure.string :as s])
   (:import java.security.MessageDigest
            java.math.BigInteger))

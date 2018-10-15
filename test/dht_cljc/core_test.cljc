@@ -1,8 +1,8 @@
-(ns dht-clj.core-test
+(ns dht-cljc.core-test
   (:refer-clojure :exclude [hash])
   (:require
-    [dht-clj.core :refer :all]
-    [dht-clj.infohash :as infohash]
+    [dht-cljc.core :refer :all]
+    [dht-cljc.infohash :as infohash]
     [clojure.test :refer :all])
   (:import java.math.BigInteger))
 

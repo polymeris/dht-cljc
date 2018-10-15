@@ -1,5 +1,5 @@
-(ns dht-clj.core
-  (:require [dht-clj.infohash :as infohash])
+(ns dht-cljc.core
+  (:require [dht-cljc.infohash :as infohash])
   (:import java.math.BigInteger))
 
 (def
