@@ -78,7 +78,13 @@
       (is (= 2 (count (get-by-overdue table 1200000))))
       (is (= 4 (count (get-by-overdue table 2400000))))
       (is (= 5 (count (get-by-overdue table 2400001))))
-      (is (= 6 (count (get-by-overdue table (fifteen-minutes-overdue!))))))))
+      (is (= 6 (count (get-by-overdue table (fifteen-minutes-overdue!))))))
+    (testing "Query nodes closest to infohash"
+      (let [infohash (infohash/hex->bytes "0x3f1db7bee63b46abf6520ed3d7afb87e248434ea")]
+        (is (->> infohash
+                 (get-nearest-peers table)
+                 (map #(-> % :infohash (infohash/distance infohash)))
+                 (apply <)))))))
 
 (deftest refresh-and-prune-operations
   (let [table
@@ -154,4 +160,10 @@
       (is (> (rctr table)
              (rctr (apply prune table (map :infohash (get-by-overdue table 1))))))
       (is (> (rctr table)
-             (rctr (apply prune table (map :infohash (get-by-overdue table (fifteen-minutes-overdue!))))))))))
+             (rctr (apply prune table (map :infohash (get-by-overdue table (fifteen-minutes-overdue!))))))))
+    (testing "Get nearest peers by infohash, sorted by distance ascending"
+      (let [infohash (infohash/generate!)]
+        (is (->> infohash
+                 (get-nearest-peers (mass-insert-fn table 500 10))
+                 (map #(-> % :infohash (infohash/distance infohash)))
+                 (apply <)))))))

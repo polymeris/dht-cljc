@@ -46,6 +46,15 @@
   []
   (- (System/currentTimeMillis) 900000))
 
+(defn get-nearest-peers
+  "Finds the nearest peers to a given infohash in the routing table. The peer
+  list is then sorted by distance, ascending, from the infohash."
+  [{:keys [client-infohash] :as table} infohash]
+  (->> (infohash/distance infohash client-infohash)
+       infohash/depth
+       (get-by-depth table)
+       (sort-by #(-> % :infohash (infohash/distance infohash)))))
+
 (defn refresh
   "Refreshes the table's nodes with new :last-seen timestamps.
   Accepts a variadic number of responses. Each response is a tuple of the
