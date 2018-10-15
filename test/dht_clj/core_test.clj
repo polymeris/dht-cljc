@@ -12,15 +12,15 @@
   (let [table (generate-table (hash "abc"))]
     (testing "Insert a few options into the table"
       (is (-> table
-              (insert! (hash "abc") "1.2.3.4" 6881)
+              (insert (System/currentTimeMillis) (hash "abc") "1.2.3.4" 6881)
               (get-in [:router 0 :depth])
               (= 160)))
       (is (-> table
-              (insert! (hash "aaa") "1.2.3.4" 6881)
+              (insert (System/currentTimeMillis) (hash "aaa") "1.2.3.4" 6881)
               (get-in [:router 0 :depth])
               (= 0)))
       (is (-> table
-              (insert! (hash "aaaaaaaa") "1.2.3.4" 6881)
+              (insert (System/currentTimeMillis) (hash "aaaaaaaa") "1.2.3.4" 6881)
               (get-in [:router 0 :depth])
               (= 3))))
     (testing "Randomly insert 100 nodes. It shouldn't be 1 or 100"

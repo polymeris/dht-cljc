@@ -104,8 +104,3 @@
         (if-not is-client-bucket?
           _table
           (recur (update _table :splits inc) node-depth node))))))
-
-(defn insert!
-  "Same as 'insert, but fills out the 'last-seen param with (System/currentTimeMillis)"
-  [table ^bytes remote-infohash ip port]
-  (insert table (System/currentTimeMillis) remote-infohash ip port))
