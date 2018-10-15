@@ -1,4 +1,4 @@
-# dht-clj
+# dht-cljc
 
 > Lord Helmet: Found anything yet?
 > Mook 1: Nothing yet, sir!
@@ -8,11 +8,11 @@
 > Mook 3: We ain't found shit!
 > - Spaceballs
 
-A Clojure BitTorrent DHT plumbing library.
+A Clojure(script) BitTorrent DHT library.
 
 ## Installation
 
-[com.jamesleonis/dht-clj "0.1.0-SNAPSHOT"]
+[com.jamesleonis/dht-cljc "0.1.0-SNAPSHOT"]
 
 ## Quickstart
 
@@ -20,11 +20,11 @@ Coming soon!
 
 ## Usage
 
-`dht-clj` gives you the tools needed to build, maintain, and query a BitTorrent DHT routing table. Operations are centered around manipulating a Routing Table with purely functional manipulators suitable for Atom or Agent storage by the consumer.
+`dht-cljc` is a DHT swiss army knife to build, maintain, and query a BitTorrent DHT routing table. Operations are centered around updating a Routing Table with pure functions suitable for Atom or Agent storage by the consumer.
 
 ### No network support
 
-As it stands, the [BEP][bep-5] defines both the protocol and the transport medium, UDP. This project aims to implement the protocol while pointedly ignoring the UDP requirement. This keeps the library lightweight and composable, but sacrifices automatic pinging and refreshing which must be handled by the consumer.
+As it stands, the [BEP][bep-5] defines both the protocol and the transport medium, UDP. This project aims to implement the protocol while pointedly ignoring the UDP requirement. This keeps the library lightweight and composable, but sacrifices automatic pinging and refreshing which must be handled by the consumer. But never fear! All the tools you need to keep your nodes fresh are open and simple.
 
 ### Router Table
 
@@ -32,7 +32,15 @@ The Router Table contains both the nodes of the DHT, as well as some configurati
 
 ### Nodes
 
-Nodes are represented as a map describing the node. The keys are `#{:infohash :depth :last-seen :ip :port}`. "Buckets" are represented by querying against the `:depth` key.
+Nodes are represented as a map describing the node. The keys are `#{:infohash :depth :last-seen :ip :port}`. "Buckets" are represented by querying against the `:depth` key. See Queries below for more information.
+
+In a nod towards IPv6, several keys are left to the consumer. This accommodates different implementations or use cases. This describes how `dht-cljc` consumes the node.
+
+`:infohash` - A byte representation of the Infohash. This should not be modified, but can be transformed using the `dht-cljc.infohash` namespace.
+`:depth` - Integer representing the depth of the node. This should not be modified. See Depth below.
+`:last-seen` - The representation of when a node was last seen. Should be acceptable to the `<` compare function.
+`:ip` - Not Used.
+`:port` - Not Used.
 
 ### Depth
 
@@ -51,11 +59,15 @@ The Router Table keeps track of the number of bucket splits. Every time the clie
 1. Math is cool.
 2. All the nodes whose `:depth` that are >= `:splits` number less than the maximum for a bucket, thus the client bucket doesn't need to split.
 
-### Insertion
+### `insert` and `prune`
 
-`insert` automatically handles the splitting, rejecting-if-full, and adding nodes. It does *not* ping questionable nodes, as that is the responsibility of the consumer.
+`insert` automatically handles the splitting, rejecting-if-full, and adding nodes. It does *not* ping questionable nodes, as that is the responsibility of the consumer. See `get-by-overdue` below.
+
+`prune` is the opposite (obviously...) of `insert`. It removes arbitrary nodes, by infohash, from the routing table, recombining buckets as necessary.
 
 ### Queries
+
+While the list of nodes is available for all to see, sometimes it's helpful for common slices to be formalized. As noted above, the primary functions combine `distance` and `depth` in ways that produce the [BEP][bep-5] recommendation operations.
 
 #### Get nodes by depth
 
@@ -63,19 +75,19 @@ To get all the nodes of a certain bucket, defined by `depth` above, we simply lo
 
 #### Find the closest node from an arbitrary infohash
 
-Coming Soon!
+`get-nearest-peers` takes an infohash and finds the nearest bucket of nodes that are closest, then sorts them based on distance (ascending) from the infohash.
 
 #### Find nodes in that need to be refreshed/pinged
 
 Several functions help with keeping the list of nodes fresh.
 
-`get-by-overdue` is a general query function that returns a list of nodes that are from before the provided timestamp. The [BEP][bep-5] describes a 15 minute window for refreshing clients, so the helper function `fifteen-minutes-overdue!` returns a timestamp representing 15 minutes from invocation in milliseconds.
+`get-by-overdue` returns a list of nodes that are from before the provided timestamp. The [BEP][bep-5] describes a 15 minute window for refreshing clients, so the helper function `fifteen-minutes-overdue!` returns a timestamp representing 15 minutes from invocation in milliseconds.
 
 `refresh` takes a list of [infohash timestamp] tuples and applies them to their respective nodes. Unlike the [BEP][bep-5] we do not track questionable nodes explicitly, preferring to keep that in control of the consumer.
 
 ## Why?
 
-The BitTorrent DHT is an important component of the torrent ecosystem, and a growing number of additional technologies are beginning to use the network as well. The aim is to make this module small and embeddable in different Clojure applications. This allows the consuming app to define and control the network transport while keeping this library lightweight and composable.
+The BitTorrent DHT is an important component of the torrent ecosystem, and a growing number of additional technologies are beginning to use the network as well. The aim is to make this module small and embeddable in different Clojure applications. This allows the consuming app to define and control the network transport and the library to expand to new Clojure ecosystems.
 
 ## License
 
