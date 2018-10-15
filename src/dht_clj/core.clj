@@ -84,17 +84,17 @@
     ip, port - The IP and port of the node
 
   Returns the updated table"
-  ([{:keys [client-infohash max-bucket-count] :as table} last-seen ^bytes remote-infohash ip port]
-   (loop [{:keys [splits] :as _table} table
-          node-depth (infohash/depth (infohash/distance remote-infohash client-infohash))
-          node {:infohash remote-infohash :depth node-depth :ip ip :port port :last-seen last-seen}]
-     (let [num-nodes-in-bucket (count (get-by-depth _table node-depth))
-           is-client-bucket? (>= node-depth splits)]
-       (if (< num-nodes-in-bucket max-bucket-count)
-         (update _table :router conj node)
-         (if-not is-client-bucket?
-           _table
-           (recur (update _table :splits inc) node-depth node)))))))
+  [{:keys [client-infohash max-bucket-count] :as table} last-seen ^bytes remote-infohash ip port]
+  (loop [{:keys [splits] :as _table} table
+         node-depth (infohash/depth (infohash/distance remote-infohash client-infohash))
+         node {:infohash remote-infohash :depth node-depth :ip ip :port port :last-seen last-seen}]
+    (let [num-nodes-in-bucket (count (get-by-depth _table node-depth))
+          is-client-bucket? (>= node-depth splits)]
+      (if (< num-nodes-in-bucket max-bucket-count)
+        (update _table :router conj node)
+        (if-not is-client-bucket?
+          _table
+          (recur (update _table :splits inc) node-depth node))))))
 
 (defn insert!
   "Same as 'insert, but fills out the 'last-seen param with (System/currentTimeMillis)"

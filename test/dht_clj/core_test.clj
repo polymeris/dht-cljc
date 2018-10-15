@@ -32,39 +32,40 @@
 
 (deftest query-operations
   (let [table
-        {:router [{:infohash "0x7e240de74fb1ed08fa08d38063f6a6a91462a815"
-                   :depth 0
-                   :ip "1.2.3.4"
-                   :port 6881
-                   :last-seen 0}
-                  {:infohash "0x70c881d4a26984ddce795f6f71817c9cf4480e79"
-                   :depth 0
-                   :ip "1.2.3.4"
-                   :port 6881
-                   :last-seen 0}
-                  {:infohash "0xdf51e37c269aa94d38f93e537bf6e2020b21406c"
-                   :depth 1
-                   :ip "1.2.3.4"
-                   :port 6881
-                   :last-seen 1200000}
-                  {:infohash "0xf7a9e24777ec23212c54d7a350bc5bea5477fdbb"
-                   :depth 1
-                   :ip "1.2.3.4"
-                   :port 6881
-                   :last-seen 1200000}
-                  {:infohash "0xe93b4e3c464ffd51732fbd6ded717e9efda28aad"
-                   :depth 1
-                   :ip "1.2.3.4"
-                   :port 6881
-                   :last-seen 2400000}
-                  {:infohash "0xb480c074d6b75947c02681f31c90c668c46bf6b8"
-                   :depth 3
-                   :ip "1.2.3.4"
-                   :port 6881
-                   :last-seen (fifteen-minutes-overdue!)}]
-         :client-infohash "0xa9993e364706816aba3e25717850c26c9cd0d89d"
-         :splits 0
-         :max-bucket-count 8}]
+        (-> {:router [{:infohash "0x7e240de74fb1ed08fa08d38063f6a6a91462a815"
+                       :depth 0
+                       :ip "1.2.3.4"
+                       :port 6881
+                       :last-seen 0}
+                      {:infohash "0x70c881d4a26984ddce795f6f71817c9cf4480e79"
+                       :depth 0
+                       :ip "1.2.3.4"
+                       :port 6881
+                       :last-seen 0}
+                      {:infohash "0xdf51e37c269aa94d38f93e537bf6e2020b21406c"
+                       :depth 1
+                       :ip "1.2.3.4"
+                       :port 6881
+                       :last-seen 1200000}
+                      {:infohash "0xf7a9e24777ec23212c54d7a350bc5bea5477fdbb"
+                       :depth 1
+                       :ip "1.2.3.4"
+                       :port 6881
+                       :last-seen 1200000}
+                      {:infohash "0xe93b4e3c464ffd51732fbd6ded717e9efda28aad"
+                       :depth 1
+                       :ip "1.2.3.4"
+                       :port 6881
+                       :last-seen 2400000}
+                      {:infohash "0xb480c074d6b75947c02681f31c90c668c46bf6b8"
+                       :depth 3
+                       :ip "1.2.3.4"
+                       :port 6881
+                       :last-seen (fifteen-minutes-overdue!)}]
+             :client-infohash (infohash/hex->bytes "0xa9993e364706816aba3e25717850c26c9cd0d89d")
+             :splits 0
+             :max-bucket-count 8}
+            (update :router (partial mapv #(update % :infohash infohash/hex->bytes))))]
     (testing "Query bucket containing client's infohash"
       (is (= 6 (count (get-by-depth table 0)))))
     (testing "Query bucket simulating outside client bucket"
@@ -111,7 +112,7 @@
                        :ip "1.2.3.4"
                        :port 6881
                        :last-seen (fifteen-minutes-overdue!)}]
-             :client-infohash "0xa9993e364706816aba3e25717850c26c9cd0d89d"
+             :client-infohash (infohash/hex->bytes "0xa9993e364706816aba3e25717850c26c9cd0d89d")
              :splits 0
              :max-bucket-count 8}
             (update :router (partial mapv #(update % :infohash infohash/hex->bytes))))
