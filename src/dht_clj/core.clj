@@ -60,28 +60,35 @@
   Accepts a variadic number of responses. Each response is a tuple of the
   infohash and the new timestamp, or [infohash timestamp]"
   [{:keys [router] :as table} & responses]
-  (->> responses
-       (reduce
-         (fn [r [infohash timestamp]]
-           (update r (vec infohash) #(assoc % :last-seen timestamp)))
-         (zipmap (map (comp vec :infohash) router) router))
-       vals
-       vec
-       (assoc table :router)))
+  (let [response-map (reduce
+                       (fn [m [i t]] (assoc m (vec i) t))
+                       {}
+                       responses)
+        response-set (set (keys response-map))]
+    (->> router
+         (mapv
+           (fn [{:keys [infohash] :as m}]
+             (if-let [vec-hash (response-set (vec infohash))]
+               (assoc m :last-seen (response-map vec-hash))
+               m)))
+         (assoc table :router))))
 
 (defn prune
   "Removes listed infohashes from the router, combining buckets as needed"
   [{:keys [router max-bucket-count] :as table} & infohashes]
-  (loop [_table
-         (update table :router
-                 (partial remove #((set (map vec infohashes))
-                                   (vec (:infohash %)))))]
-    (if (zero? (:splits _table))
-      _table
-      (let [table-check (update _table :splits dec)]
-        (if-not (> max-bucket-count (count (get-by-depth table-check (:splits _table))))
+  (let [infohash-vec-set (set (map vec infohashes))
+        cleared-router (remove (comp infohash-vec-set vec :infohash) router)]
+    (loop [_table (assoc table :router cleared-router)]
+      (if (zero? (:splits _table))
+        _table
+        (if (< max-bucket-count
+               (->> _table
+                    :splits
+                    dec
+                    (get-by-depth _table)
+                    count))
           _table
-          (recur table-check))))))
+          (recur (update _table :splits dec)))))))
 
 (defn insert
   "Inserts the given node into the router, respecting full and dividing buckets.
@@ -93,14 +100,21 @@
     ip, port - The IP and port of the node
 
   Returns the updated table"
-  [{:keys [client-infohash max-bucket-count] :as table} last-seen ^bytes remote-infohash ip port]
-  (loop [{:keys [splits] :as _table} table
-         node-depth (infohash/depth (infohash/distance remote-infohash client-infohash))
-         node {:infohash remote-infohash :depth node-depth :ip ip :port port :last-seen last-seen}]
-    (let [num-nodes-in-bucket (count (get-by-depth _table node-depth))
-          is-client-bucket? (>= node-depth splits)]
-      (if (< num-nodes-in-bucket max-bucket-count)
-        (update _table :router conj node)
-        (if-not is-client-bucket?
-          _table
-          (recur (update _table :splits inc) node-depth node))))))
+  [table last-seen remote-infohash ip port]
+  (let [{:keys [client-infohash max-bucket-count]} table
+        node-depth (-> remote-infohash
+                       (infohash/distance client-infohash)
+                       infohash/depth)
+        node {:infohash remote-infohash
+              :depth node-depth
+              :ip ip
+              :port port
+              :last-seen last-seen}]
+    (loop [{:keys [splits] :as _table} table]
+      (let [num-nodes-in-bucket (count (get-by-depth _table node-depth))
+            is-client-bucket? (>= node-depth splits)]
+        (if (< num-nodes-in-bucket max-bucket-count)
+          (update _table :router conj node)
+          (if-not is-client-bucket?
+            _table
+            (recur (update _table :splits inc))))))))
