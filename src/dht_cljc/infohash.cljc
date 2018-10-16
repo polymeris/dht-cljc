@@ -1,17 +1,15 @@
 (ns dht-cljc.infohash
   (:require
-    [dht-cljc.utils :as utils])
-  #?(:clj
-     (:import java.security.MessageDigest)
-     :cljs
-     (:require
-       [goog.crypt :as crypt])))
+    [dht-cljc.utils :as utils]
+    #?@(:cljs
+         [[goog.crypt.Sha1 :as Sha1]
+          [goog.crypt :as crypt]])))
 
 (defn sha1
   "Returns a hex string encoded SHA1 of the data"
   [data]
-  (let [jsha #?(:clj (MessageDigest/getInstance "SHA-1")
-                :cljs (crypt.Sha1.))]
+  (let [jsha #?(:clj (java.security.MessageDigest/getInstance "SHA-1")
+                :cljs (goog.crypt.Sha1.))]
     (.update jsha data)
     (vec (.digest jsha))))
 
@@ -20,14 +18,13 @@
   Returns a byte-stream"
   []
   (->> (utils/now!)
-      rand
-      str
-      utils/string->bytes
-      sha1))
+       rand
+       str
+       utils/string->bytes
+       sha1))
 
 (defn distance
-  "Get the XOR difference (abs (xor a b)) between two infohashes.
-  Returns a BigInteger of the distance."
+  "Get the XOR difference (abs (xor a b)) between two infohashes."
   [a b]
   (mapv bit-xor a b))
 

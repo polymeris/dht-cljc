@@ -1,6 +1,6 @@
 (ns dht-cljc.core
-  (:require [dht-cljc.infohash :as infohash])
-  (:import java.math.BigInteger))
+  (:require [dht-cljc.infohash :as infohash]
+            [dht-cljc.utils :as utils]))
 
 (def
   ^{:doc "A list of BitTorrent DHT bootstrap nodes."}
@@ -44,7 +44,7 @@
   "Gets the time, in milliseconds, 15 minutes ago. This is the default used
   in the BEP_0005 spec for overdue nodes. Useful for 'get-by-overdue"
   []
-  (- (System/currentTimeMillis) 900000))
+  (- (utils/now!) 900000))
 
 (defn get-nearest-peers
   "Finds the nearest peers to a given infohash in the routing table. The peer

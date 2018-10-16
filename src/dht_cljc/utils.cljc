@@ -1,5 +1,8 @@
 (ns dht-cljc.utils
-  (:require [clojure.string :as s]))
+  (:require
+    [clojure.string :as s]
+    #?(:cljs
+       [goog.crypt :as crypt])))
 
 (defn now!
   "Get the Unix epoch in milliseconds"

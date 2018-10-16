@@ -7,6 +7,8 @@
   :dependencies [[org.clojure/clojure "1.9.0" :scope "provided"]
                  [org.clojure/clojurescript "1.10.339" :scope "provided"]]
 
+  :plugins [[lein-cljsbuild "1.1.7"]]
+
   :source-paths ["src"]
   :test-paths ["test"]
 
@@ -24,7 +26,7 @@
      :compiler {:output-to "target/unit-tests.js"
                 :optimizations :none
                 :target :nodejs
-                :main dht-cljc.core-test}}
+                :main dht-cljc.runner}}
     :prod
     {:source-paths ["src"]
      :compiler {:output-to "target/dht-cljc.js"
