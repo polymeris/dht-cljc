@@ -1,11 +1,11 @@
 # dht-cljc
 
-> Lord Helmet: Found anything yet?
-> Mook 1: Nothing yet, sir!
-> Lord Helmet: How 'bout you?
-> Mook 2: Not a thing, sir!
-> Lord Helmet: How 'bout you guys?
-> Mook 3: We ain't found shit!
+> Lord Helmet: Found anything yet?  
+> Mook 1: Nothing yet, sir!  
+> Lord Helmet: How 'bout you?  
+> Mook 2: Not a thing, sir!  
+> Lord Helmet: How 'bout you guys?  
+> Mook 3: We ain't found shit!  
 > - Spaceballs
 
 A Clojure(script) BitTorrent DHT plumbing library.
@@ -40,11 +40,11 @@ Nodes are represented as a map describing the node. The keys are `#{:infohash :d
 
 In a nod towards IPv6, several keys are left to the consumer. This accommodates different implementations or use cases. This describes how `dht-cljc` consumes the node.
 
-`:infohash` - A byte representation of the Infohash. This should not be modified, but can be transformed using the `dht-cljc.infohash` namespace.
-`:depth` - Integer representing the depth of the node. This should not be modified. See Depth below.
-`:last-seen` - The representation of when a node was last seen. Should be acceptable to the `<` compare function.
-`:ip` - Not Used.
-`:port` - Not Used.
+* `:infohash` - A byte representation of the Infohash. This should not be modified, but can be transformed using the `dht-cljc.infohash` namespace.
+* `:depth` - Integer representing the depth of the node. This should not be modified. See Depth below.
+* `:last-seen` - The representation of when a node was last seen. Should be acceptable to the `<` compare function.
+* `:ip` - Not Used.
+* `:port` - Not Used.
 
 ### Depth
 
