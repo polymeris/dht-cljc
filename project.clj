@@ -1,6 +1,6 @@
-(defproject com.jamesleonis/dht-cljc "0.1.0-SNAPSHOT"
+(defproject com.jamesleonis/dht-cljc "0.1.0"
   :description "A Clojure(script) BitTorrent DHT plubming library"
-  :url "https://github.com/jamesleonis/dht-clj"
+  :url "https://github.com/jamesleonis/dht-cljc"
   :license {:name "Eclipse Public License - v 2.0"
             :url "https://www.eclipse.org/org/documents/epl-2.0/EPL-2.0.txt"}
 
