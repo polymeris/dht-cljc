@@ -20,7 +20,35 @@ The BitTorrent DHT is an important component of the torrent ecosystem, and a gro
 
 ## Quickstart
 
-Coming soon!
+```
+(ns my-cool-project.core
+  (:require
+    [dht-cljc.core :as dht]
+    [dht-cljc.infohash :as infohash]
+    [dht-cljc.utils :as utils]))
+
+; First you need a table. Here's an atom as an example.
+(def table (atom (dht/generate-table (infohash/generate!))))
+
+; Now we need to insert some nodes
+(doseq [[remote-infohash ip port] (seq list-of-dht-nodes-from-network)]
+  (swap! table dht/insert (utils/now!) remote-infohash ip port))
+
+; Find nodes by a given depth
+(dht/get-by-depth table 2)
+; => [ ...list of nodes... ]
+
+(dht/get-nearest-peers table (utils/generate!))
+; => [ ...sorted list of nodes, by distance... ]
+
+; Refresh the timestamps of recently contacted peers
+(swap! table dht/refresh [infohash1 (utils/now!)] [infohash2 (utils/now!)]
+
+; Find bad nodes with get-by-overdue...
+(let [bad-nodes (dht/get-by-overdue table (dht/fifteen-minutes-overdue!))]
+; ...so we can prune them!
+  (swap! table dht/prune (map :infohash bad-nodes)))
+```
 
 ## Usage
 
