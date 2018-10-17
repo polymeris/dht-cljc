@@ -6,7 +6,7 @@
           [goog.crypt :as crypt]])))
 
 (defn sha1
-  "Returns a hex string encoded SHA1 of the data"
+  "Returns a byte vector encoded SHA1 of the data"
   [data]
   (let [jsha #?(:clj (java.security.MessageDigest/getInstance "SHA-1")
                 :cljs (goog.crypt.Sha1.))]
@@ -15,7 +15,7 @@
 
 (defn generate!
   "Generates a random SHA1 infohash useful for clients.
-  Returns a byte-stream"
+  Returns a byte vector of the infohash"
   []
   (->> (utils/now!)
        rand

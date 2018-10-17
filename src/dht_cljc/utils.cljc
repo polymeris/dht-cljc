@@ -11,6 +11,7 @@
      :cljs (.getTime (js/Date.))))
 
 (defn string->bytes
+  "Convert a given string to a byte vector"
   [string]
   #?(:clj (.getBytes string)
      :cljs (crypt/stringToUtf8ByteArray string)))

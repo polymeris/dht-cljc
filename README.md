@@ -26,25 +26,39 @@ Coming soon!
 
 `dht-cljc` is a DHT swiss army knife to build, maintain, and query a BitTorrent DHT routing table. Operations are centered around updating a Routing Table with pure functions suitable for Atom or Agent storage by the consumer.
 
-### No network support
-
-As it stands, the [BEP][bep-5] defines both the protocol and the transport medium, UDP. This project aims to implement the protocol while pointedly ignoring the UDP requirement. This keeps the library lightweight and composable, but sacrifices automatic pinging and refreshing which must be handled by the consumer. But never fear! All the tools you need to keep your nodes fresh are open and simple.
-
 ### Transforms
 
 * `insert` automatically handles the splitting, rejecting-if-full, and adding nodes. It does *not* ping questionable nodes, as that is the responsibility of the consumer. See `get-by-overdue` below.
 * `prune` is the opposite (obviously...) of `insert`. It removes arbitrary nodes, by infohash, from the routing table, recombining buckets as necessary.
-* `refresh` takes a list of [infohash timestamp] tuples and applies them to their respective nodes. Unlike the [BEP][bep-5] we do not track questionable nodes explicitly, preferring to keep that in control of the consumer (see `get-by-overdue`).
+* `refresh` takes a list of `[infohash timestamp]` tuples and applies them to their respective nodes. Unlike the [BEP][bep-5] we do not track questionable nodes explicitly, preferring to keep that in control of the consumer (see `get-by-overdue`).
 
 ### Queries
 
-While the list of nodes is available for all to see, sometimes it's helpful for common slices to be formalized. As noted above, the primary functions combine `distance` and `depth` in ways that produce the [BEP][bep-5] recommendation operations.
+While the list of nodes is available for all to see, sometimes it's helpful for common slices to be formalized. The primary functions combine `distance` and `depth` in ways that produce the [BEP][bep-5] recommendation operations.
 
 * `get-by-depth` gets all the nodes of a certain bucket, defined by `depth` (see below), we simply look for all the items that match that depth. But as also noted above, depths below `:splits` will return all nodes in the Client infohash bucket.
 * `get-nearest-peers` takes an infohash and finds the nearest bucket of nodes that are closest, then sorts them based on distance (ascending) from the infohash.
 * `get-by-overdue` returns a list of nodes that are from before the provided timestamp. The [BEP][bep-5] describes a 15 minute window for refreshing clients, so the helper function `fifteen-minutes-overdue!` returns a timestamp representing 15 minutes from invocation in milliseconds.
 
+### Other
+
+I've included several other helpers for managing DHT clients.
+
+* `dht-cljc.core/bootstrap-nodes` is a sequence of tuples `[URL port]` that describe public DHT bootstrap nodes that can be queried initially.
+* The `dht-cljc.infohash` namespace has several functions for managing infohashes.
+  * `depth` and `distance` fns
+  * `sha1` that operates on bytes
+  * `generate!` creates a random infohash for your client.
+* The `dht-cljc.utils` namespace has several general helpers.
+  * Transforms to and from hex-encoded strings to byte vectors
+  * A portable `now!` fn that gets the Unix epoch time.
+  * A portable `string->bytes` fn
+
 ## Details
+
+### No network support
+
+As it stands, the [BEP][bep-5] defines both the protocol and the transport medium, UDP. This project aims to implement the protocol while pointedly ignoring the UDP requirement. This keeps the library lightweight and composable, but sacrifices automatic pinging and refreshing which must be handled by the consumer. But never fear! All the tools you need to keep your nodes fresh are open and simple.
 
 ### Router Table
 
