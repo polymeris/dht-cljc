@@ -35,17 +35,17 @@ The BitTorrent DHT is an important component of the torrent ecosystem, and a gro
   (swap! table dht/insert (utils/now!) remote-infohash ip port))
 
 ; Find nodes by a given depth
-(dht/get-by-depth table 2)
+(dht/get-by-depth @table 2)
 ; => [ ...list of nodes... ]
 
-(dht/get-nearest-peers table (utils/generate!))
+(dht/get-nearest-peers @table (utils/generate!))
 ; => [ ...sorted list of nodes, by distance... ]
 
 ; Refresh the timestamps of recently contacted peers
 (swap! table dht/refresh [infohash1 (utils/now!)] [infohash2 (utils/now!)]
 
 ; Find bad nodes with get-by-overdue...
-(let [bad-nodes (dht/get-by-overdue table (dht/fifteen-minutes-overdue!))]
+(let [bad-nodes (dht/get-by-overdue @table (dht/fifteen-minutes-overdue!))]
 ; ...so we can prune them!
   (swap! table dht/prune (map :infohash bad-nodes)))
 ```
