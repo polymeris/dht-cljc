@@ -10,7 +10,7 @@
 
 A Clojure(script) BitTorrent DHT plumbing library.
 
-`[com.jamesleonis/dht-cljc "0.1.0-SNAPSHOT"]`
+`[com.jamesleonis/dht-cljc "0.1.0"]`
 
 [![Clojars Project](https://img.shields.io/clojars/v/com.jamesleonis/dht-cljc.svg)](https://clojars.org/com.jamesleonis/dht-cljc)
 
