@@ -30,13 +30,34 @@ Coming soon!
 
 As it stands, the [BEP][bep-5] defines both the protocol and the transport medium, UDP. This project aims to implement the protocol while pointedly ignoring the UDP requirement. This keeps the library lightweight and composable, but sacrifices automatic pinging and refreshing which must be handled by the consumer. But never fear! All the tools you need to keep your nodes fresh are open and simple.
 
+### Transforms
+
+* `insert` automatically handles the splitting, rejecting-if-full, and adding nodes. It does *not* ping questionable nodes, as that is the responsibility of the consumer. See `get-by-overdue` below.
+* `prune` is the opposite (obviously...) of `insert`. It removes arbitrary nodes, by infohash, from the routing table, recombining buckets as necessary.
+* `refresh` takes a list of [infohash timestamp] tuples and applies them to their respective nodes. Unlike the [BEP][bep-5] we do not track questionable nodes explicitly, preferring to keep that in control of the consumer (see `get-by-overdue`).
+
+### Queries
+
+While the list of nodes is available for all to see, sometimes it's helpful for common slices to be formalized. As noted above, the primary functions combine `distance` and `depth` in ways that produce the [BEP][bep-5] recommendation operations.
+
+* `get-by-depth` gets all the nodes of a certain bucket, defined by `depth` (see below), we simply look for all the items that match that depth. But as also noted above, depths below `:splits` will return all nodes in the Client infohash bucket.
+* `get-nearest-peers` takes an infohash and finds the nearest bucket of nodes that are closest, then sorts them based on distance (ascending) from the infohash.
+* `get-by-overdue` returns a list of nodes that are from before the provided timestamp. The [BEP][bep-5] describes a 15 minute window for refreshing clients, so the helper function `fifteen-minutes-overdue!` returns a timestamp representing 15 minutes from invocation in milliseconds.
+
+## Details
+
 ### Router Table
 
-The Router Table contains both the nodes of the DHT, as well as some configuration of the table itself. The vector of nodes is found in the `:router` key. A table can be initialized with the `generate-table` function.
+The Router Table contains both the nodes of the DHT, as well as some configuration of the table itself. A table can be initialized with the `generate-table` function. The Table itself is made of these keys.
+
+* `:router` - A vector of nodes in the entire table. Queries slice and dice this in various ways, but it can be extended by *YOU!*
+* `:client-infohash` - The infohash of the consuming app. This is used to determine distance and depth described below.
+* `:splits` - How many times the router split buckets. This is modified by the `insert` and `prune` functions to dynamically adjust the number of buckets.
+* `:max-bucket-count` - The maximum number of nodes in a given bucket. The default is set to 8, as recommended by the [BEP][bep-5], but this can be configured to any number. An example of such large buckets are DHT Bootstrapping nodes.
 
 ### Nodes
 
-Nodes are represented as a map describing the node. The keys are `#{:infohash :depth :last-seen :ip :port}`. "Buckets" are represented by querying against the `:depth` key. See Queries below for more information.
+Nodes are represented as a map describing the node. The keys are `#{:infohash :depth :last-seen :ip :port}`. "Buckets" are represented by querying against the `:depth` key.
 
 In a nod towards IPv6, several keys are left to the consumer. This accommodates different implementations or use cases. This describes how `dht-cljc` consumes the node.
 
@@ -62,32 +83,6 @@ The Router Table keeps track of the number of bucket splits. Every time the clie
 
 1. Math is cool.
 2. All the nodes whose `:depth` that are >= `:splits` number less than the maximum for a bucket, thus the client bucket doesn't need to split.
-
-### `insert` and `prune`
-
-`insert` automatically handles the splitting, rejecting-if-full, and adding nodes. It does *not* ping questionable nodes, as that is the responsibility of the consumer. See `get-by-overdue` below.
-
-`prune` is the opposite (obviously...) of `insert`. It removes arbitrary nodes, by infohash, from the routing table, recombining buckets as necessary.
-
-### Queries
-
-While the list of nodes is available for all to see, sometimes it's helpful for common slices to be formalized. As noted above, the primary functions combine `distance` and `depth` in ways that produce the [BEP][bep-5] recommendation operations.
-
-#### Get nodes by depth
-
-To get all the nodes of a certain bucket, defined by `depth` above, we simply look for all the items that match that depth. But as also noted above, depths below `:splits` will return all nodes in the Client infohash bucket. The `get-by-depth` function performs this operation.
-
-#### Find the closest node from an arbitrary infohash
-
-`get-nearest-peers` takes an infohash and finds the nearest bucket of nodes that are closest, then sorts them based on distance (ascending) from the infohash.
-
-#### Find nodes in that need to be refreshed/pinged
-
-Several functions help with keeping the list of nodes fresh.
-
-`get-by-overdue` returns a list of nodes that are from before the provided timestamp. The [BEP][bep-5] describes a 15 minute window for refreshing clients, so the helper function `fifteen-minutes-overdue!` returns a timestamp representing 15 minutes from invocation in milliseconds.
-
-`refresh` takes a list of [infohash timestamp] tuples and applies them to their respective nodes. Unlike the [BEP][bep-5] we do not track questionable nodes explicitly, preferring to keep that in control of the consumer.
 
 ## Development
 
