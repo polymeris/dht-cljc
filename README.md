@@ -8,11 +8,15 @@
 > Mook 3: We ain't found shit!
 > - Spaceballs
 
-A Clojure(script) BitTorrent DHT library.
+A Clojure(script) BitTorrent DHT plumbing library.
 
-## Installation
+`[com.jamesleonis/dht-cljc "0.1.0-SNAPSHOT"]`
 
-[com.jamesleonis/dht-cljc "0.1.0-SNAPSHOT"]
+[![Clojars Project](https://img.shields.io/clojars/v/com.jamesleonis/dht-cljc.svg)](https://clojars.org/com.jamesleonis/dht-cljc)
+
+## Why?
+
+The BitTorrent DHT is an important component of the torrent ecosystem, and a growing number of additional technologies are beginning to use the network as well. The aim is to make this module small and embeddable in different Clojure applications. This allows the consuming app to define and control the network transport and the library to expand to new Clojure ecosystems.
 
 ## Quickstart
 
@@ -85,9 +89,16 @@ Several functions help with keeping the list of nodes fresh.
 
 `refresh` takes a list of [infohash timestamp] tuples and applies them to their respective nodes. Unlike the [BEP][bep-5] we do not track questionable nodes explicitly, preferring to keep that in control of the consumer.
 
-## Why?
+## Development
 
-The BitTorrent DHT is an important component of the torrent ecosystem, and a growing number of additional technologies are beginning to use the network as well. The aim is to make this module small and embeddable in different Clojure applications. This allows the consuming app to define and control the network transport and the library to expand to new Clojure ecosystems.
+The test suite is built in CLJC, and is run under both Clojure and Clojurescript.
+
+The Clojurescript unit tests require NodeJS to run. Otherwise only Leiningen is required.
+
+* `lein test` runs the tests under Clojure.
+* `lein cljs-test` runs the tests under Clojurescript and NodeJS.
+* `lein test-all` runs both Clojure and Clojurescript test suite.
+* `lein cljs-auto-test` automatically compiles and runs the Clojurescript tests on every change.
 
 ## License
 
