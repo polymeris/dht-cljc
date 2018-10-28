@@ -14,6 +14,8 @@ A Clojure(script) BitTorrent DHT plumbing library.
 
 [![Clojars Project](https://img.shields.io/clojars/v/com.jamesleonis/dht-cljc.svg)](https://clojars.org/com.jamesleonis/dht-cljc)
 
+[![cljdoc badge](https://cljdoc.org/badge/com.jamesleonis/dht-cljc)](https://cljdoc.xyz/d/com.jamesleonis/dht-cljc/CURRENT)
+
 ## Why?
 
 The BitTorrent DHT is an important component of the torrent ecosystem, and a growing number of additional technologies are beginning to use the network as well. The aim is to make this module small and embeddable in different Clojure applications. This allows the consuming app to define and control the network transport and the library to expand to new Clojure ecosystems.
